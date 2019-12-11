@@ -12,7 +12,19 @@ from collections import deque
 from typing import Tuple, List
 from multiprocessing import Manager, Process
 
-print(tf.__version__)
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+    # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+    # Memory growth must be set before GPUs have been initialized
+        print(e)
+# print(tf.__version__)
+
 class ep_buffer:
     """
     Class that stores the state transition information of an episode
@@ -100,22 +112,14 @@ def build_networks(layer_sizes, activations, input):
 def build_model(input, output, name):
     return keras.Model(input, output, name=name)
 
-
-class Env:
-    state_space_size = 0 
-    action_space_size = 0
-    def __init__(self, env_name, action_space_size, state_space_size):
-        Env.state_space_size = state_space_size
-        Env.action_space_size = action_space_size
-        self.name = env_name
-    
     
 
-class Agent(ep_buffer, Env):
+class Agent(ep_buffer):
     def __init__(self,
-                 actor_mu,
-                 actor_cov,
-                 critic, 
+                 trunk_config,
+                 actor_mu_config,
+                 actor_cov_config,
+                 critic_config, 
                  actor_optimizer,
                  critic_optimizer,
                  entropy,
@@ -125,44 +129,64 @@ class Agent(ep_buffer, Env):
                  max_steps,
                  n_episodes_per_cycle,
                  gamma,
-                 env,
+                 env_name,
                  state_space_size,
                  gradient_queue,
                  parameters_queue,
-                 current_iter): 
-        
+                 current_iter, 
+                 name):
         ep_buffer.__init__(self)
-        Env.__init__(self, env, action_space_size, state_space_size)
+        
 
      
-        self.actor_mu = actor_mu
-        self.actor_cov = actor_cov
-        self.critic = critic
+        self.trunk_config = trunk_config
+        self.actor_mu_config = actor_mu_config
+        self.actor_cov_config = actor_cov_config
+        self.critic_config = critic_config
         self.actor_optimizer = actor_optimizer
         self.critic_optimizer = critic_optimizer
         self.entropy = entropy
+        self.action_space_bounds = action_space_bounds
+        self.action_space_size = action_space_size
         self.action_bounds = action_space_bounds
         self.number_iter = number_iter
         self.max_steps = max_steps
         self.n_episodes_per_cycle = n_episodes_per_cycle        
         self.gamma = gamma
-        self.env = gym.make(env)
+        self.env_name = env_name
         self.gradient_queue = gradient_queue
         self.parameters_queue = parameters_queue
+        self.name = name
         
-        index_last_layer = len(actor_cov.layers) -1
-        self.current_parameters = {"mu": actor_mu.trainable_variables[0].numpy(),
-                           "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables[0].numpy(),
-                           "critic": critic.trainable_variables[0].numpy()
-            
-        }
-        self.variables =  {"mu": actor_mu.trainable_variables,
-                           "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables,
-                           "critic": critic.trainable_variables
-            
-        }
+      
         self.current_iter = current_iter
+        
+    def build_models(self):
+        
+        self.input = keras.Input(shape=(8), name="state")
+        self.trunk = build_networks(**self.trunk_config, input=self.input)
+        mu_head = build_networks(**self.actor_mu_config, input=self.trunk)
+        cov_head = build_networks(**self.actor_cov_config, input=self.trunk)
+        critic = build_networks(**self.critic_config, input=self.input)
+        self.actor_mu = build_model(self.input, mu_head, "actor_mu")
+        self.actor_cov = build_model(self.input, cov_head, "actor_cov")
+        self.critic = build_model(self.input, critic, "critic")
+        
+        index_last_layer = len(self.actor_cov.layers) -1
+        
+ 
+        self.current_parameters = {"mu": [variable.numpy() for variable in self.actor_mu.trainable_variables],
+                           "cov": [variable.numpy() for variable in self.actor_cov.get_layer(index=index_last_layer).trainable_variables],
+                           "critic": [variable.numpy() for variable in self.critic.trainable_variables]
+        
+                           }
     
+        self.variables =  {"mu": self.actor_mu.trainable_variables,
+                           "cov": self.actor_cov.get_layer(index=index_last_layer).trainable_variables,
+                           "critic": self.critic.trainable_variables
+            
+        }
+        
     def collect_episodes(self, number_ep, max_steps, render=False):
         total_steps = 0
         total_reward = 0
@@ -215,9 +239,10 @@ class Agent(ep_buffer, Env):
         
 class GlobalAgent(Agent):
     def __init__(self,
-                 actor_mu,
-                 actor_cov,
-                 critic, 
+                 trunk_config,
+                 actor_mu_config,
+                 actor_cov_config,
+                 critic_config, 
                  actor_optimizer,
                  critic_optimizer,
                  entropy,
@@ -227,15 +252,18 @@ class GlobalAgent(Agent):
                  max_steps,
                  n_episodes_per_cycle,
                  gamma,
-                 env,
+                 env_name,
                  state_space_size,
                  gradient_queue,
                  parameters_queue,
-                 current_iter):
+                 current_iter,
+                 name):
+        
         Agent.__init__(self,
-                 actor_mu,
-                 actor_cov,
-                 critic, 
+                 trunk_config,
+                 actor_mu_config,
+                 actor_cov_config,
+                 critic_config, 
                  actor_optimizer,
                  critic_optimizer,
                  entropy,
@@ -245,42 +273,52 @@ class GlobalAgent(Agent):
                  max_steps,
                  n_episodes_per_cycle,
                  gamma,
-                 env,
+                 env_name,
                  state_space_size,
                  gradient_queue,
                  parameters_queue,
-                 current_iter)
+                 current_iter, 
+                 name)
         
       
-        self.parameters_queue.put(self.current_parameters)
-        
     def training_loop(self):
+        self.build_models()
+        self.env = gym.make(self.env_name)
         
+        self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
+        time.sleep(1)
         while self.current_iter.value < self.number_iter:
-            gradients = self.gradient_queue.get()
+            self.iter = self.current_iter.value
+            self.parameters_queue.get(block=True, timeout=30)
+            gradients = self.gradient_queue.get(block=True, timeout=30)
+            # print(f"Global Agent got gradients from {gradients['name']} --Iter: {self.iter}")
+           
+                
             for key, value in gradients.items():
-                
-                self.actor_optimizer.apply_gradients(zip(value, self.variables[key]))
-                self.parameters_queue.get()
-                
-                self.current_parameters = {"mu": actor_mu.trainable_variables[0].numpy(),
-                                   "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables[0].numpy(),
-                                   "critic": critic.trainable_variables[0].numpy()
-                    
-        }
-                self.parameters_queue.put(self.parameters)
+                if key != "name":
+                    self.actor_optimizer.apply_gradients(zip(value, self.variables[key]))
+            index_last_layer = len(self.actor_cov.layers) - 1
+            
+            self.current_parameters = {"mu": [variable.numpy() for variable in self.actor_mu.trainable_variables],
+                           "cov": [variable.numpy() for variable in self.actor_cov.get_layer(index=index_last_layer).trainable_variables],
+                           "critic": [variable.numpy() for variable in self.critic.trainable_variables]
         
-            if self.current_iter.value % 100:
-                reward = self.collect_episodes(1, 2000)
-                print(f"Reward at iter: {self.current_iter.value} is {reward}")
+                           }
+            self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
+            # print(f"New weights available from {gradients['name']} gradients --Iter: {self.iter}")
+        
+            if self.iter % 100 == 0:
+                reward = self.collect_episodes(1, 2000, render=True)
+                print(f"Reward at iter: {self.iter} is {reward}")
  
         
 class WorkerAgent(Agent):
    
     def __init__(self,
-                 actor_mu,
-                 actor_cov,
-                 critic, 
+                 trunk_config,
+                 actor_mu_config,
+                 actor_cov_config,
+                 critic_config, 
                  actor_optimizer,
                  critic_optimizer,
                  entropy,
@@ -290,16 +328,18 @@ class WorkerAgent(Agent):
                  max_steps,
                  n_episodes_per_cycle,
                  gamma,
-                 env,
+                 env_name,
                  state_space_size,
                  gradient_queue,
                  parameters_queue,
-                 current_iter): 
+                 current_iter,
+                 name): 
         
-        Agent.__init__(self,
-                        actor_mu,
-                        actor_cov,
-                        critic, 
+        Agent.__init__( self,
+                        trunk_config,
+                        actor_mu_config,
+                        actor_cov_config,
+                        critic_config, 
                         actor_optimizer,
                         critic_optimizer,
                         entropy,
@@ -309,30 +349,35 @@ class WorkerAgent(Agent):
                         max_steps,
                         n_episodes_per_cycle,
                         gamma,
-                        env,
+                        env_name,
                         state_space_size,
                         gradient_queue,
                         parameters_queue,
-                        current_iter)
+                        current_iter, 
+                        name)
 
         
     def training_loop(self):
-    
+        self.build_models()
+        self.env = gym.make(self.env_name)
+        
         rewards_collection = deque(maxlen=100)
         while self.current_iter.value < self.number_iter:
-            
+            self.iter = self.current_iter.value
+            # print(f"{self.parameters_queue.qsize()} variables waiting at {self.name} --Iter : {self.iter} ")
             self.update_variables()
-            
+            # print(f"{self.name} syncronized its variables-- Iter: {self.iter}")
             reward_ep = self.collect_episodes(self.n_episodes_per_cycle, self.max_steps)
             states, actions, next_states, rewards, qsa = self.unroll_memory(self.gamma)
             
             # states = tf.convert_to_tensor(states)
             # actions = tf.convert_to_tensor(actions)
             # rewards = tf.convert_to_tensor(rewards)
-            gradients = train_step(states, actions, qsa)
+            gradients = self.train_step(states, actions, qsa)
             
             self.gradient_queue.put(gradients)
           
+            # print(f"Gradients from {self.name} available-- Iter: {self.iter}")
             rewards_collection.append(reward_ep)
             
             self.current_iter.value += 1
@@ -345,16 +390,22 @@ class WorkerAgent(Agent):
 
             # if iter % 1000 == 0:
             #     self.collect_episodes(1, 2000, render=True)
-    @tf.function
+
     def update_variables(self):
         
-        self.new_params = self.parameters_queue.get()
+        self.new_params = self.parameters_queue.get(block=True, timeout=30)
+        self.parameters_queue.put(self.new_params, block=True, timeout=30)
         for key, value in self.new_params.items():
-            
-            self.variables[key].assign(value)
-           
-                
-        self.parameters_queue.put(self.new_params)
+            for n, variable in enumerate(self.variables[key]):
+                variable.assign(value[n])
+
+        index_last_layer = len(self.actor_cov.layers) - 1 
+        self.current_parameters = {"mu": [variable.numpy() for variable in self.actor_mu.trainable_variables],
+                        "cov": [variable.numpy() for variable in self.actor_cov.get_layer(index=index_last_layer).trainable_variables],
+                        "critic": [variable.numpy() for variable in self.critic.trainable_variables]
+    
+                        }
+    
                 
     
     @tf.function(input_signature=(tf.TensorSpec(shape=[None, 8]), tf.TensorSpec(shape=[None, 2]),tf.TensorSpec(shape=[None, 1])))
@@ -382,14 +433,14 @@ class WorkerAgent(Agent):
         gradients = {"mu": gradients_mu,
                      "cov": gradients_cov,
                      "critic": gradients_critic,
+                     "name": self.name,
         }
+        
         return gradients
                 
             
-        
 
-
-trunk_parameters = {
+trunk_config = {
    
     "layer_sizes": [100, 100],
     "activations": [ "relu", "relu"],
@@ -397,37 +448,31 @@ trunk_parameters = {
 
 
 
-mu_head_parameters = {
+mu_head_config = {
     "layer_sizes":[2],
-    "activations": [tf.nn.tanh],
-    "input": trunk}
+    "activations": [tf.nn.tanh]
+    }
 
-cov_head_parameters = {
+cov_head_config = {
     "layer_sizes":[2],
     "activations": [tf.nn.softplus],
-    "input": trunk
+  
     }
 
-critic_net_parameters = {
+critic_net_config= {
     "layer_sizes":[100, 10, 1],
     "activations": ["relu", "relu", "linear"],
-    "input": state_input
     }
 
-mu_head = build_networks(**mu_head_parameters)
-cov_head = build_networks(**cov_head_parameters)
-critic_net = build_networks(** critic_net_parameters)
 
-mu_model = build_model(state_input,mu_head, "actor_mu")
-cov_model = build_model(state_input, cov_head, "actor_cov")
-critic_model = build_model(state_input, critic_net, "critic")
 
 number_of_workers = 4
 
 agent_configuration = {
-    "actor_mu":mu_model,
-    "actor_cov":cov_model, 
-    "critic":critic_model,
+    "trunk_config": trunk_config,
+    "actor_mu_config": mu_head_config,
+    "actor_cov_config":cov_head_config, 
+    "critic_config": critic_net_config,
     "actor_optimizer":tf.keras.optimizers.Adam(0.0001),
     "critic_optimizer":tf.keras.optimizers.Adam(0.01),
     "entropy":0.01,
@@ -437,13 +482,13 @@ agent_configuration = {
     "max_steps":2000,
     "n_episodes_per_cycle":1,
     "gamma":0.99,
-    "env":"LunarLanderContinuous-v2",
+    "env_name":"LunarLanderContinuous-v2",
     "state_space_size":8
 }
 
 if __name__ == '__main__':
     
-    number_of_workers = 4
+    number_of_workers = 2
     params_queue = Manager().Queue(1)
     gradient_queue = Manager().Queue(1)
     current_iter = Manager().Value("i", 0)
@@ -451,15 +496,18 @@ if __name__ == '__main__':
     global_agent = GlobalAgent(**agent_configuration,
                                gradient_queue=gradient_queue,
                                parameters_queue = params_queue,
-                               current_iter=current_iter)
+                               current_iter=current_iter,
+                               name="Global Agent")
     
-    workers = [WorkerAgent(**agent_configuration, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter) for _ in range(number_of_workers)]
-
+    workers = [WorkerAgent(**agent_configuration, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}") for _ in range(number_of_workers)]
+    processes = []
     p1 = Process(target=global_agent.training_loop)
+    processes.append(p1)
     p1.start()
+
     for worker in workers:
         
-        p = Process(target=worker.traning_loop)
+        p = Process(target=worker.training_loop)
         processes.append(p)
         p.start()
     
