@@ -10,7 +10,7 @@ import time
 import random
 from collections import deque
 from typing import Tuple, List
-import multiprocessing
+from multiprocessing import Manager, Process
 
 print(tf.__version__)
 class ep_buffer:
@@ -110,43 +110,8 @@ class Env:
         self.name = env_name
     
     
-# @train_decorator
-@tf.function(input_signature=(tf.TensorSpec(shape=[None, 8]), tf.TensorSpec(shape=[None, 2]),tf.TensorSpec(shape=[None, 1])))
-def train_step(states, actions, Qsa):
-    with tf.GradientTape(persistent=True) as tape:
-        # Actor
-        mu = self.actor_mu(states)
-        cov = self.actor_cov(states)
-        advantage_function = Qsa - self.critic(states)
-        probability_density_func = tfp.distributions.Normal(mu, cov)
-        entropy = probability_density_func.entropy()
-        log_probs = probability_density_func.log_prob(actions)
-        expected_value = tf.multiply(log_probs, advantage_function)
-        expected_value_with_entropy = expected_value + entropy * self.entropy
-        actor_cost = -tf.reduce_mean(expected_value_with_entropy)
-        
-        # Critic
-        critic_cost = tf.losses.mean_squared_error(Qsa, self.critic(states))
-    
-    gradients_mu = tape.gradient(actor_cost, self.actor_mu.trainable_variables)
-    last_layer_index= len(self.actor_cov.layers) - 1
-    
-    gradients_cov = tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables)
-    gradients_critic = tape.gradient(critic_cost, self.critic.trainable_variables)
-    
-    return (gradients_mu, gradients_cov, gradients_critic)
-    
-def update_globalAgent(gradients, global_agent):
-    mu, cov, critic = gradients
-    
-    global_agent.actor_optimizer.apply_gradients(zip(gradients_mu, global_agent.actor_mu.trainable_variables))
-    global_agent.actor_optimizer.apply_gradients(zip(gradients_cov, global_agent.actor_cov.get_layer(index=last_layer_index).trainable_variables))
-    
-    
-    global_agent.critic_optimizer.apply_gradients(zip(gradients_critic, global_agent.critic.trainable_variables))
-    
-    
-class GlobalAgent(ep_buffer, Env):
+
+class Agent(ep_buffer, Env):
     def __init__(self,
                  actor_mu,
                  actor_cov,
@@ -161,7 +126,11 @@ class GlobalAgent(ep_buffer, Env):
                  n_episodes_per_cycle,
                  gamma,
                  env,
-                 state_space_size): 
+                 state_space_size,
+                 gradient_queue,
+                 parameters_queue,
+                 current_iter): 
+        
         ep_buffer.__init__(self)
         Env.__init__(self, env, action_space_size, state_space_size)
 
@@ -178,10 +147,21 @@ class GlobalAgent(ep_buffer, Env):
         self.n_episodes_per_cycle = n_episodes_per_cycle        
         self.gamma = gamma
         self.env = gym.make(env)
-      
+        self.gradient_queue = gradient_queue
+        self.parameters_queue = parameters_queue
         
-        
-        
+        index_last_layer = len(actor_cov.layers) -1
+        self.current_parameters = {"mu": actor_mu.trainable_variables[0].numpy(),
+                           "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables[0].numpy(),
+                           "critic": critic.trainable_variables[0].numpy()
+            
+        }
+        self.variables =  {"mu": actor_mu.trainable_variables,
+                           "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables,
+                           "critic": critic.trainable_variables
+            
+        }
+        self.current_iter = current_iter
     
     def collect_episodes(self, number_ep, max_steps, render=False):
         total_steps = 0
@@ -232,11 +212,70 @@ class GlobalAgent(ep_buffer, Env):
         # print(f"Action {action}\n Type: {action.shape}")
         return action
     
-
-    
+        
+class GlobalAgent(Agent):
+    def __init__(self,
+                 actor_mu,
+                 actor_cov,
+                 critic, 
+                 actor_optimizer,
+                 critic_optimizer,
+                 entropy,
+                 action_space_bounds,
+                 action_space_size,
+                 number_iter,
+                 max_steps,
+                 n_episodes_per_cycle,
+                 gamma,
+                 env,
+                 state_space_size,
+                 gradient_queue,
+                 parameters_queue,
+                 current_iter):
+        Agent.__init__(self,
+                 actor_mu,
+                 actor_cov,
+                 critic, 
+                 actor_optimizer,
+                 critic_optimizer,
+                 entropy,
+                 action_space_bounds,
+                 action_space_size,
+                 number_iter,
+                 max_steps,
+                 n_episodes_per_cycle,
+                 gamma,
+                 env,
+                 state_space_size,
+                 gradient_queue,
+                 parameters_queue,
+                 current_iter)
+        
+      
+        self.parameters_queue.put(self.current_parameters)
+        
+    def training_loop(self):
+        
+        while self.current_iter.value < self.number_iter:
+            gradients = self.gradient_queue.get()
+            for key, value in gradients.items():
+                
+                self.actor_optimizer.apply_gradients(zip(value, self.variables[key]))
+                self.parameters_queue.get()
+                
+                self.current_parameters = {"mu": actor_mu.trainable_variables[0].numpy(),
+                                   "cov": actor_cov.get_layer(index=index_last_layer).trainable_variables[0].numpy(),
+                                   "critic": critic.trainable_variables[0].numpy()
+                    
+        }
+                self.parameters_queue.put(self.parameters)
+        
+            if self.current_iter.value % 100:
+                reward = self.collect_episodes(1, 2000)
+                print(f"Reward at iter: {self.current_iter.value} is {reward}")
  
         
-class WorkerAgent(GlobalAgent):
+class WorkerAgent(Agent):
    
     def __init__(self,
                  actor_mu,
@@ -253,33 +292,37 @@ class WorkerAgent(GlobalAgent):
                  gamma,
                  env,
                  state_space_size,
-                 global_agent,
-                 lock): 
+                 gradient_queue,
+                 parameters_queue,
+                 current_iter): 
         
-        GlobalAgent.__init__(self,
-                            actor_mu,
-                            actor_cov,
-                            critic, 
-                            actor_optimizer,
-                            critic_optimizer,
-                            entropy,
-                            action_space_bounds,
-                            action_space_size,
-                            number_iter,
-                            max_steps,
-                            n_episodes_per_cycle,
-                            gamma,
-                            env,
-                            state_space_size)
-        
-        self.global_agent = global_agent
-        self.lock = lock
+        Agent.__init__(self,
+                        actor_mu,
+                        actor_cov,
+                        critic, 
+                        actor_optimizer,
+                        critic_optimizer,
+                        entropy,
+                        action_space_bounds,
+                        action_space_size,
+                        number_iter,
+                        max_steps,
+                        n_episodes_per_cycle,
+                        gamma,
+                        env,
+                        state_space_size,
+                        gradient_queue,
+                        parameters_queue,
+                        current_iter)
+
         
     def training_loop(self):
     
         rewards_collection = deque(maxlen=100)
-        
-        for iter in range(self.number_iter):
+        while self.current_iter.value < self.number_iter:
+            
+            self.update_variables()
+            
             reward_ep = self.collect_episodes(self.n_episodes_per_cycle, self.max_steps)
             states, actions, next_states, rewards, qsa = self.unroll_memory(self.gamma)
             
@@ -288,23 +331,62 @@ class WorkerAgent(GlobalAgent):
             # rewards = tf.convert_to_tensor(rewards)
             gradients = train_step(states, actions, qsa)
             
-            update_globalAgent(gradients, self.global_agent)
+            self.gradient_queue.put(gradients)
+          
             rewards_collection.append(reward_ep)
             
+            self.current_iter.value += 1
 
-            if iter % 100 == 0:
+            # if iter % 100 == 0:
             
-                average_reward = sum(rewards_collection)/100
-                print(f"Average reward at ep {iter} is -> {average_reward}")
+            #     average_reward = sum(rewards_collection)/100
+            #     print(f"Average reward at ep {iter} is -> {average_reward}")
     
 
-            if iter % 1000 == 0:
-                self.collect_episodes(1, 2000, render=True)
-    
+            # if iter % 1000 == 0:
+            #     self.collect_episodes(1, 2000, render=True)
+    @tf.function
+    def update_variables(self):
         
+        self.new_params = self.parameters_queue.get()
+        for key, value in self.new_params.items():
+            
+            self.variables[key].assign(value)
+           
+                
+        self.parameters_queue.put(self.new_params)
+                
     
-
-
+    @tf.function(input_signature=(tf.TensorSpec(shape=[None, 8]), tf.TensorSpec(shape=[None, 2]),tf.TensorSpec(shape=[None, 1])))
+    def train_step(self, states, actions, Qsa):
+        with tf.GradientTape(persistent=True) as tape:
+            # Actor
+            mu = self.actor_mu(states)
+            cov = self.actor_cov(states)
+            advantage_function = Qsa - self.critic(states)
+            probability_density_func = tfp.distributions.Normal(mu, cov)
+            entropy = probability_density_func.entropy()
+            log_probs = probability_density_func.log_prob(actions)
+            expected_value = tf.multiply(log_probs, advantage_function)
+            expected_value_with_entropy = expected_value + entropy * self.entropy
+            actor_cost = -tf.reduce_mean(expected_value_with_entropy)
+            
+            # Critic
+            critic_cost = tf.losses.mean_squared_error(Qsa, self.critic(states))
+        
+        gradients_mu = tape.gradient(actor_cost, self.actor_mu.trainable_variables)
+        last_layer_index= len(self.actor_cov.layers) - 1
+        
+        gradients_cov = tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables)
+        gradients_critic = tape.gradient(critic_cost, self.critic.trainable_variables)
+        gradients = {"mu": gradients_mu,
+                     "cov": gradients_cov,
+                     "critic": gradients_critic,
+        }
+        return gradients
+                
+            
+        
 
 state_input = keras.Input(shape=(8), name="state")
 trunk_parameters = {
@@ -343,46 +425,48 @@ critic_model = build_model(state_input, critic_net, "critic")
 number_of_workers = 4
 
 agent_configuration = {
-              
-              "actor_mu":mu_model,
-              "actor_cov":cov_model, 
-              "critic":critic_model,
-              "actor_optimizer":tf.keras.optimizers.Adam(0.0001),
-              "critic_optimizer":tf.keras.optimizers.Adam(0.01),
-              "entropy":0.01,
-              "action_space_bounds":[-1,1],
-              "action_space_size":2,
-              "number_iter":3000,
-              "max_steps":2000,
-              "n_episodes_per_cycle":1,
-              "gamma":0.99,
-              "env":"LunarLanderContinuous-v2",
-              "state_space_size":8
+    "actor_mu":mu_model,
+    "actor_cov":cov_model, 
+    "critic":critic_model,
+    "actor_optimizer":tf.keras.optimizers.Adam(0.0001),
+    "critic_optimizer":tf.keras.optimizers.Adam(0.01),
+    "entropy":0.01,
+    "action_space_bounds":[-1,1],
+    "action_space_size":2,
+    "number_iter":200,
+    "max_steps":2000,
+    "n_episodes_per_cycle":1,
+    "gamma":0.99,
+    "env":"LunarLanderContinuous-v2",
+    "state_space_size":8
 }
 
-
-
-
-
-
-
 if __name__ == '__main__':
-    multiprocessing.managers.BaseManager.register("GlobalAgent", GlobalAgent)
-    manager = BaseManager()
-    manager.start()
-    global_agent = manager.GlobalAgent(**agent_configuration)
-    lock = multiprocessing.Lock()
-    workers = [WorkerAgent(**agent_configuration, global_agent=global_agent) for _ in range(number_of_workers)]
+    
+    number_of_workers = 4
+    params_queue = Manager().Queue(1)
+    gradient_queue = Manager().Queue(1)
+    current_iter = Manager().Value("i", 0)
+    
+    global_agent = GlobalAgent(**agent_configuration,
+                               gradient_queue=gradient_queue,
+                               parameters_queue = params_queue,
+                               current_iter=current_iter)
+    
+    workers = [WorkerAgent(**agent_configuration, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter) for _ in range(number_of_workers)]
 
-    processes = []
+    p1 = Process(target=global_agent.training_loop)
+    p1.start()
     for worker in workers:
         
-        p = multiprocessing.Process(target=worker.traning_loop)
+        p = Process(target=worker.traning_loop)
         processes.append(p)
         p.start()
     
     for p in processes:
         p.join()
+    
+    print("Simulation Run")
         
         
         

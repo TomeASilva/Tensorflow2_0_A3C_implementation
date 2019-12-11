@@ -352,7 +352,7 @@ agent = Agent(actor_mu_parameters,
               n_episodes_per_cycle=1,
               number_iterations=200,
               gamma=0.99,
-              actor_optimizer=tf.train.AdamOptimizer(0.0001),
+              actor_optimizer=tf.train.AdamOptimizer(0.01),
               critic_optimizer=tf.train.AdamOptimizer(0.01))
 
 time_start = time.time()
