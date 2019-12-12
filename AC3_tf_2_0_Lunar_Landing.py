@@ -102,9 +102,9 @@ class ep_buffer:
     
 def build_networks(layer_sizes, activations, input):
     num_layers = len(layer_sizes)
-    output = keras.layers.Dense(units=layer_sizes[0], activation=activations[0], kernel_initializer='glorot_uniform')(input)
+    output = keras.layers.Dense(units=layer_sizes[0], activation=activations[0], kernel_initializer='glorot_normal')(input)
     for i in range(1, num_layers):
-        output = keras.layers.Dense(units=layer_sizes[i], activation=activations[i], kernel_initializer='glorot_uniform')(output)
+        output = keras.layers.Dense(units=layer_sizes[i], activation=activations[i], kernel_initializer='glorot_normal')(output)
     
     return output
     
@@ -284,7 +284,8 @@ class GlobalAgent(Agent):
     def training_loop(self):
         self.build_models()
         self.env = gym.make(self.env_name)
-        
+        self.writer = tf.summary.create_file_writer(f"./summaries/global/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        self.current_pass = 0 
         self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
         time.sleep(1)
         while self.current_iter.value < self.number_iter:
@@ -293,6 +294,13 @@ class GlobalAgent(Agent):
             gradients = self.gradient_queue.get(block=True, timeout=30)
             # print(f"Global Agent got gradients from {gradients['name']} --Iter: {self.iter}")
            
+            #check the gradients 
+            with self.writer.as_default():
+                for key , grandient_list in gradients.items():
+                    if key != "name": 
+                        for gradient, variable in zip(grandient_list, self.variables[key]):
+                            tf.summary.histogram(f"{self.name}_{str(key)}_{variable.name}", gradient, self.current_pass)
+                    
                 
             for key, value in gradients.items():
                 if key != "name":
@@ -306,7 +314,8 @@ class GlobalAgent(Agent):
                            }
             self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
             # print(f"New weights available from {gradients['name']} gradients --Iter: {self.iter}")
-        
+
+            self.current_pass += 1
             if self.iter % 100 == 0:
                 reward = self.collect_episodes(1, 2000, render=True)
                 print(f"Reward at iter: {self.iter} is {reward}")
@@ -358,14 +367,24 @@ class WorkerAgent(Agent):
 
         
     def training_loop(self):
+        self.writer = tf.summary.create_file_writer(f"./summaries/worker/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
         self.build_models()
         self.env = gym.make(self.env_name)
+        self.number_passes = 0 # to count the number of iteration done within worker
         
         rewards_collection = deque(maxlen=100)
         while self.current_iter.value < self.number_iter:
+            
             self.iter = self.current_iter.value
             # print(f"{self.parameters_queue.qsize()} variables waiting at {self.name} --Iter : {self.iter} ")
             self.update_variables()
+            #check Weights after update
+            
+            with self.writer.as_default():
+                for key, list_variables in self.variables.items():
+                    for variable in list_variables:
+                        tf.summary.histogram(f"{key}_{variable.name}", variable, step=self.number_passes)
+                        
             # print(f"{self.name} syncronized its variables-- Iter: {self.iter}")
             reward_ep = self.collect_episodes(self.n_episodes_per_cycle, self.max_steps)
             states, actions, next_states, rewards, qsa = self.unroll_memory(self.gamma)
@@ -381,6 +400,7 @@ class WorkerAgent(Agent):
             rewards_collection.append(reward_ep)
             
             self.current_iter.value += 1
+            self.number_passes += 1
 
             # if iter % 100 == 0:
             
@@ -425,11 +445,12 @@ class WorkerAgent(Agent):
             # Critic
             critic_cost = tf.losses.mean_squared_error(Qsa, self.critic(states))
         
-        gradients_mu = tape.gradient(actor_cost, self.actor_mu.trainable_variables)
+        gradients_mu = tf.clip_by_norm(tape.gradient(actor_cost, self.actor_mu.trainable_variables), 1)
+        
         last_layer_index= len(self.actor_cov.layers) - 1
         
-        gradients_cov = tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables)
-        gradients_critic = tape.gradient(critic_cost, self.critic.trainable_variables)
+        gradients_cov = tf.clip_by_norm(tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables), 1)
+        gradients_critic = tf.clip_by_global_norm(tape.gradient(critic_cost, self.critic.trainable_variables), 1 )
         gradients = {"mu": gradients_mu,
                      "cov": gradients_cov,
                      "critic": gradients_critic,
@@ -460,7 +481,7 @@ cov_head_config = {
     }
 
 critic_net_config= {
-    "layer_sizes":[100, 10, 1],
+    "layer_sizes":[100, 64, 1],
     "activations": ["relu", "relu", "linear"],
     }
 
@@ -473,12 +494,12 @@ agent_configuration = {
     "actor_mu_config": mu_head_config,
     "actor_cov_config":cov_head_config, 
     "critic_config": critic_net_config,
-    "actor_optimizer":tf.keras.optimizers.Adam(0.0001),
-    "critic_optimizer":tf.keras.optimizers.Adam(0.01),
+    "actor_optimizer":tf.keras.optimizers.RMSprop(0.001),
+    "critic_optimizer":tf.keras.optimizers.RMSprop(0.01),
     "entropy":0.01,
     "action_space_bounds":[-1,1],
     "action_space_size":2,
-    "number_iter":200,
+    "number_iter":3000,
     "max_steps":2000,
     "n_episodes_per_cycle":1,
     "gamma":0.99,
@@ -488,7 +509,7 @@ agent_configuration = {
 
 if __name__ == '__main__':
     
-    number_of_workers = 2
+    number_of_workers = 1
     params_queue = Manager().Queue(1)
     gradient_queue = Manager().Queue(1)
     current_iter = Manager().Value("i", 0)
