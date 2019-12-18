@@ -10,7 +10,7 @@ import time
 import random
 from collections import deque
 from typing import Tuple, List
-from multiprocessing import Manager, Process
+from multiprocessing import Manager, Process, Queue
 
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
@@ -266,7 +266,8 @@ class GlobalAgent(Agent):
                  parameters_queue,
                  current_iter,
                  name,
-                 record_statistics):
+                 record_statistics,
+                 average_reward_queue):
         
         Agent.__init__(self,
                  trunk_config,
@@ -290,7 +291,8 @@ class GlobalAgent(Agent):
                  current_iter, 
                  name,
                  record_statistics)
-        
+        self.rewards = deque(maxlen=100)
+        self.average_reward_queue = average_reward_queue
       
     def training_loop(self):
         self.build_models()
@@ -332,9 +334,10 @@ class GlobalAgent(Agent):
             self.current_pass += 1
             if self.iter % 100 == 0:
                 reward = self.collect_episodes(1, 2000, render=True)
+                self.rewards.append(reward)
                 print(f"Reward at iter: {self.iter} is {reward}")
- 
-        
+        self.average_reward_queue.put(sum(self.rewards) / len(self.rewards), block=True, timeout=30)
+      
 class WorkerAgent(Agent):
    
     def __init__(self,
@@ -419,7 +422,7 @@ class WorkerAgent(Agent):
                     gradients[key] = [tf.clip_by_norm(value, 0.1) for value in gradient]
                     
         
-            self.gradient_queue.put(gradients)
+            self.gradient_queue.put(gradients, block=True, timeout=30)
             
       
           
@@ -524,30 +527,12 @@ hyperparameters = { "trunk_config": trunk_config,
                     "gamma":0.99,
                     "gradient_clipping": 0.5
                     }
-# agent_configuration = {
-#     "trunk_config": trunk_config,
-#     "actor_mu_config": mu_head_config,
-#     "actor_cov_config":cov_head_config, 
-#     "critic_config": critic_net_config,
-#     "actor_optimizer": tf.keras.optimizers.SGD(learning_rate=0.001),
-#     "critic_optimizer": tf.keras.optimizers.SGD(learning_rate=0.01),
-#     "entropy":0.01,
-#     "action_space_bounds":[-1, 1],
-#     "action_space_size":2,
-#     "number_iter":10000,
-#     "max_steps":2000,
-#     "n_episodes_per_cycle":1,
-#     "gamma":0.99,
-#     "env_name":"LunarLanderContinuous-v2",
-#     "state_space_size":8,
-#     "gradient_clipping": 0.5,
-# }
 
 agent_configuration = {
 
     "action_space_bounds":[-1, 1],
     "action_space_size":2,
-    "number_iter":10000,
+    "number_iter":100,
     "max_steps":2000,
     "n_episodes_per_cycle":1,
     
@@ -562,8 +547,9 @@ if __name__ == '__main__':
     
     number_of_workers = 4
     params_queue = Manager().Queue(1)
-    gradient_queue = Manager().Queue(1)
+    gradient_queue = Manager().Queue()
     current_iter = Manager().Value("i", 0)
+    average_reward_queue = Queue(1)
     
     # global_agent = GlobalAgent(**agent_configuration,
     #                            gradient_queue=gradient_queue,
@@ -578,7 +564,8 @@ if __name__ == '__main__':
                             parameters_queue = params_queue,
                             current_iter=current_iter,
                             name="Global Agent", 
-                            record_statistics=False)
+                            record_statistics=False,
+                            average_reward_queue= average_reward_queue)
     
     # workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]
     workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]
@@ -596,7 +583,7 @@ if __name__ == '__main__':
     
     for p in processes:
         p.join()
-    
+    print(average_reward_queue.get())
     print("Simulation Run")
         
         

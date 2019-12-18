@@ -1,1 +1,2 @@
-print(tf.__version__)
+
+    average_reward_queue = Queue(1)
