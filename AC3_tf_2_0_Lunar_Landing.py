@@ -131,14 +131,16 @@ class Agent(ep_buffer):
                  gamma,
                  env_name,
                  state_space_size,
+                 gradient_clipping,
                  gradient_queue,
                  parameters_queue,
                  current_iter, 
-                 name):
+                 name,
+                 record_statistics):
         ep_buffer.__init__(self)
         
 
-     
+        self.gradient_clipping = gradient_clipping
         self.trunk_config = trunk_config
         self.actor_mu_config = actor_mu_config
         self.actor_cov_config = actor_cov_config
@@ -157,9 +159,8 @@ class Agent(ep_buffer):
         self.gradient_queue = gradient_queue
         self.parameters_queue = parameters_queue
         self.name = name
-        
-      
         self.current_iter = current_iter
+        self.record_statistics = record_statistics
         
     def build_models(self):
         
@@ -226,12 +227,18 @@ class Agent(ep_buffer):
     @tf.function
     def take_action(self, state):
         # state numpy
-        
+         
         mu = self.actor_mu(state)
         cov = self.actor_cov(state)
-        
+        # tf.print("mu-------")
+        # tf.print(mu)
+        # tf.print("Cov------")
+        # tf.print(cov)        
         probability_density_func = tfp.distributions.Normal(mu, cov)
-        action = tf.clip_by_value(probability_density_func.sample(1), self.action_bounds[0], self.action_bounds[1])
+        action = probability_density_func.sample(1)
+        # tf.print("Action")
+        # tf.print(action)
+        action = tf.clip_by_value(action, self.action_bounds[0], self.action_bounds[1])
        
         # print(f"Action {action}\n Type: {action.shape}")
         return action
@@ -254,10 +261,12 @@ class GlobalAgent(Agent):
                  gamma,
                  env_name,
                  state_space_size,
+                 gradient_clipping,
                  gradient_queue,
                  parameters_queue,
                  current_iter,
-                 name):
+                 name,
+                 record_statistics):
         
         Agent.__init__(self,
                  trunk_config,
@@ -275,32 +284,37 @@ class GlobalAgent(Agent):
                  gamma,
                  env_name,
                  state_space_size,
+                 gradient_clipping,
                  gradient_queue,
                  parameters_queue,
                  current_iter, 
-                 name)
+                 name,
+                 record_statistics)
         
       
     def training_loop(self):
         self.build_models()
         self.env = gym.make(self.env_name)
-        self.writer = tf.summary.create_file_writer(f"./summaries/global/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        if self.record_statistics: 
+            self.writer = tf.summary.create_file_writer(f"./summaries/global/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
         self.current_pass = 0 
         self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
-        time.sleep(1)
+        time.sleep(2)
         while self.current_iter.value < self.number_iter:
             self.iter = self.current_iter.value
             self.parameters_queue.get(block=True, timeout=30)
+       
             gradients = self.gradient_queue.get(block=True, timeout=30)
             # print(f"Global Agent got gradients from {gradients['name']} --Iter: {self.iter}")
            
-            #check the gradients 
-            with self.writer.as_default():
-                for key , grandient_list in gradients.items():
-                    if key != "name": 
-                        for gradient, variable in zip(grandient_list, self.variables[key]):
-                            tf.summary.histogram(f"{self.name}_{str(key)}_{variable.name}", gradient, self.current_pass)
-                    
+            #check the gradients
+            if self.record_statistics :
+                with self.writer.as_default():
+                    for key, grandient_list in gradients.items():
+                        if key != "name": 
+                            for gradient, variable in zip(grandient_list, self.variables[key]):
+                                tf.summary.histogram(f"{self.name}_{str(key)}_{variable.name}", gradient, self.current_pass)
+                        
                 
             for key, value in gradients.items():
                 if key != "name":
@@ -339,10 +353,12 @@ class WorkerAgent(Agent):
                  gamma,
                  env_name,
                  state_space_size,
+                 gradient_clipping,
                  gradient_queue,
                  parameters_queue,
                  current_iter,
-                 name): 
+                 name,
+                 record_statistics): 
         
         Agent.__init__( self,
                         trunk_config,
@@ -360,14 +376,17 @@ class WorkerAgent(Agent):
                         gamma,
                         env_name,
                         state_space_size,
+                        gradient_clipping,
                         gradient_queue,
                         parameters_queue,
                         current_iter, 
-                        name)
+                        name,
+                        record_statistics)
 
         
     def training_loop(self):
-        self.writer = tf.summary.create_file_writer(f"./summaries/worker/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
+        if self.record_statistics: 
+            self.writer = tf.summary.create_file_writer(f"./summaries/worker/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
         self.build_models()
         self.env = gym.make(self.env_name)
         self.number_passes = 0 # to count the number of iteration done within worker
@@ -379,12 +398,12 @@ class WorkerAgent(Agent):
             # print(f"{self.parameters_queue.qsize()} variables waiting at {self.name} --Iter : {self.iter} ")
             self.update_variables()
             #check Weights after update
-            
-            with self.writer.as_default():
-                for key, list_variables in self.variables.items():
-                    for variable in list_variables:
-                        tf.summary.histogram(f"{key}_{variable.name}", variable, step=self.number_passes)
-                        
+            if self.record_statistics:
+                with self.writer.as_default():
+                    for key, list_variables in self.variables.items():
+                        for variable in list_variables:
+                            tf.summary.histogram(f"{key}_{variable.name}", variable, step=self.number_passes)
+                            
             # print(f"{self.name} syncronized its variables-- Iter: {self.iter}")
             reward_ep = self.collect_episodes(self.n_episodes_per_cycle, self.max_steps)
             states, actions, next_states, rewards, qsa = self.unroll_memory(self.gamma)
@@ -393,8 +412,16 @@ class WorkerAgent(Agent):
             # actions = tf.convert_to_tensor(actions)
             # rewards = tf.convert_to_tensor(rewards)
             gradients = self.train_step(states, actions, qsa)
-            
+         
+            #Cliping gradients
+            for key, gradient in gradients.items():
+                if key != "name":
+                    gradients[key] = [tf.clip_by_norm(value, 0.1) for value in gradient]
+                    
+        
             self.gradient_queue.put(gradients)
+            
+      
           
             # print(f"Gradients from {self.name} available-- Iter: {self.iter}")
             rewards_collection.append(reward_ep)
@@ -414,7 +441,7 @@ class WorkerAgent(Agent):
     def update_variables(self):
         
         self.new_params = self.parameters_queue.get(block=True, timeout=30)
-        self.parameters_queue.put(self.new_params, block=True, timeout=30)
+        self.parameters_queue.put(self.new_params)
         for key, value in self.new_params.items():
             for n, variable in enumerate(self.variables[key]):
                 variable.assign(value[n])
@@ -445,12 +472,13 @@ class WorkerAgent(Agent):
             # Critic
             critic_cost = tf.losses.mean_squared_error(Qsa, self.critic(states))
         
-        gradients_mu = tf.clip_by_norm(tape.gradient(actor_cost, self.actor_mu.trainable_variables), 1)
+      
+        gradients_mu = tape.gradient(actor_cost, self.actor_mu.trainable_variables)
         
         last_layer_index= len(self.actor_cov.layers) - 1
         
-        gradients_cov = tf.clip_by_norm(tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables), 1)
-        gradients_critic = tf.clip_by_global_norm(tape.gradient(critic_cost, self.critic.trainable_variables), 1 )
+        gradients_cov = tape.gradient(actor_cost, self.actor_cov.get_layer(index=last_layer_index).trainable_variables)
+        gradients_critic = tape.gradient(critic_cost, self.critic.trainable_variables)
         gradients = {"mu": gradients_mu,
                      "cov": gradients_cov,
                      "critic": gradients_critic,
@@ -470,13 +498,13 @@ trunk_config = {
 
 
 mu_head_config = {
-    "layer_sizes":[2],
-    "activations": [tf.nn.tanh]
+    "layer_sizes":[50, 40, 2],
+    "activations": ["relu", "relu", "relu", "tanh"]
     }
 
 cov_head_config = {
-    "layer_sizes":[2],
-    "activations": [tf.nn.softplus],
+    "layer_sizes":[50, 40, 2],
+    "activations": ["relu", "relu", "softplus"],
   
     }
 
@@ -486,41 +514,75 @@ critic_net_config= {
     }
 
 
-
-number_of_workers = 4
+hyperparameters = { "trunk_config": trunk_config,
+                    "actor_mu_config": mu_head_config,
+                    "actor_cov_config":cov_head_config, 
+                    "critic_config": critic_net_config,
+                    "actor_optimizer": tf.keras.optimizers.SGD(learning_rate=0.001),
+                    "critic_optimizer": tf.keras.optimizers.SGD(learning_rate=0.01),
+                    "entropy":0.01,
+                    "gamma":0.99,
+                    "gradient_clipping": 0.5
+                    }
+# agent_configuration = {
+#     "trunk_config": trunk_config,
+#     "actor_mu_config": mu_head_config,
+#     "actor_cov_config":cov_head_config, 
+#     "critic_config": critic_net_config,
+#     "actor_optimizer": tf.keras.optimizers.SGD(learning_rate=0.001),
+#     "critic_optimizer": tf.keras.optimizers.SGD(learning_rate=0.01),
+#     "entropy":0.01,
+#     "action_space_bounds":[-1, 1],
+#     "action_space_size":2,
+#     "number_iter":10000,
+#     "max_steps":2000,
+#     "n_episodes_per_cycle":1,
+#     "gamma":0.99,
+#     "env_name":"LunarLanderContinuous-v2",
+#     "state_space_size":8,
+#     "gradient_clipping": 0.5,
+# }
 
 agent_configuration = {
-    "trunk_config": trunk_config,
-    "actor_mu_config": mu_head_config,
-    "actor_cov_config":cov_head_config, 
-    "critic_config": critic_net_config,
-    "actor_optimizer":tf.keras.optimizers.RMSprop(0.001),
-    "critic_optimizer":tf.keras.optimizers.RMSprop(0.01),
-    "entropy":0.01,
-    "action_space_bounds":[-1,1],
+
+    "action_space_bounds":[-1, 1],
     "action_space_size":2,
-    "number_iter":3000,
+    "number_iter":10000,
     "max_steps":2000,
     "n_episodes_per_cycle":1,
-    "gamma":0.99,
+    
     "env_name":"LunarLanderContinuous-v2",
-    "state_space_size":8
+    "state_space_size":8,
 }
 
+
+# "actor_optimizer":tf.keras.optimizers.RMSprop(0.01),
+# "critic_optimizer":tf.keras.optimizers.RMSprop(0.1),
 if __name__ == '__main__':
     
-    number_of_workers = 1
+    number_of_workers = 4
     params_queue = Manager().Queue(1)
     gradient_queue = Manager().Queue(1)
     current_iter = Manager().Value("i", 0)
     
-    global_agent = GlobalAgent(**agent_configuration,
-                               gradient_queue=gradient_queue,
-                               parameters_queue = params_queue,
-                               current_iter=current_iter,
-                               name="Global Agent")
+    # global_agent = GlobalAgent(**agent_configuration,
+    #                            gradient_queue=gradient_queue,
+    #                            parameters_queue = params_queue,
+    #                            current_iter=current_iter,
+    #                            name="Global Agent", 
+    #                            record_statistics=False)
     
-    workers = [WorkerAgent(**agent_configuration, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}") for _ in range(number_of_workers)]
+    global_agent = GlobalAgent(**agent_configuration, 
+                               **hyperparameters,
+                            gradient_queue=gradient_queue,
+                            parameters_queue = params_queue,
+                            current_iter=current_iter,
+                            name="Global Agent", 
+                            record_statistics=False)
+    
+    # workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]
+    workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]
+    
     processes = []
     p1 = Process(target=global_agent.training_loop)
     processes.append(p1)
