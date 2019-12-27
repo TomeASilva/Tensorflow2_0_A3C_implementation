@@ -267,7 +267,8 @@ class GlobalAgent(Agent):
                  current_iter,
                  name,
                  record_statistics,
-                 average_reward_queue):
+                 average_reward_queue,
+                 save_checkpoints=False):
         
         Agent.__init__(self,
                  trunk_config,
@@ -293,13 +294,29 @@ class GlobalAgent(Agent):
                  record_statistics)
         self.rewards = deque(maxlen=100)
         self.average_reward_queue = average_reward_queue
+        self.save_checkpoints = save_checkpoints
       
     def training_loop(self):
         self.build_models()
         self.env = gym.make(self.env_name)
         if self.record_statistics: 
             self.writer = tf.summary.create_file_writer(f"./summaries/global/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
-        self.current_pass = 0 
+        self.current_pass = 0
+        # print("Random Variables")
+        # print(self.actor_mu.trainable_variables[0].numpy())
+        if self.save_checkpoints:
+            try:
+                self.actor_mu.load_weights("./saved_checkpoints/actor_mu/")
+                self.actor_cov.load_weights("./saved_checkpoints/actor_cov/")
+                self.critic.load_weights("./saved_checkpoints/critic/")
+            except:
+                print("there was an error")
+                pass
+        # print("Loaded Variables")
+        # print(self.actor_mu.trainable_variables[0].numpy())
+        
+        # exit()
+            
         self.parameters_queue.put(self.current_parameters, block=True, timeout=30)
         time.sleep(2)
         while self.current_iter.value < self.number_iter:
@@ -320,7 +337,11 @@ class GlobalAgent(Agent):
                 
             for key, value in gradients.items():
                 if key != "name":
-                    self.actor_optimizer.apply_gradients(zip(value, self.variables[key]))
+                    if key == "critic":
+                        self.critic_optimizer.apply_gradients(zip(value, self.variables[key]))
+                    else:
+                        self.actor_optimizer.apply_gradients(zip(value, self.variables[key]))
+                        
             index_last_layer = len(self.actor_cov.layers) - 1
             
             self.current_parameters = {"mu": [variable.numpy() for variable in self.actor_mu.trainable_variables],
@@ -337,7 +358,10 @@ class GlobalAgent(Agent):
                 self.rewards.append(reward)
                 print(f"Reward at iter: {self.iter} is {reward}")
         self.average_reward_queue.put(sum(self.rewards) / len(self.rewards), block=True, timeout=30)
-      
+        if self.save_checkpoints:
+            self.actor_mu.save_weights("./saved_checkpoints/actor_mu/")
+            self.actor_cov.save_weights("./saved_checkpoints/actor_cov/")
+            self.critic.save_weights("./saved_checkpoints/critic/")
 class WorkerAgent(Agent):
    
     def __init__(self,
@@ -419,7 +443,7 @@ class WorkerAgent(Agent):
             #Cliping gradients
             for key, gradient in gradients.items():
                 if key != "name":
-                    gradients[key] = [tf.clip_by_norm(value, 0.1) for value in gradient]
+                    gradients[key] = [tf.clip_by_norm(value, self.gradient_clipping) for value in gradient]
                     
         
             self.gradient_queue.put(gradients, block=True, timeout=30)
@@ -470,7 +494,7 @@ class WorkerAgent(Agent):
             log_probs = probability_density_func.log_prob(actions)
             expected_value = tf.multiply(log_probs, advantage_function)
             expected_value_with_entropy = expected_value + entropy * self.entropy
-            actor_cost = -tf.reduce_mean(expected_value_with_entropy)
+            actor_cost = tf.reduce_sum(-expected_value_with_entropy)
             
             # Critic
             critic_cost = tf.losses.mean_squared_error(Qsa, self.critic(states))
@@ -501,13 +525,13 @@ trunk_config = {
 
 
 mu_head_config = {
-    "layer_sizes":[50, 40, 2],
-    "activations": ["relu", "relu", "relu", "tanh"]
+    "layer_sizes":[2],
+    "activations": ["tanh"]
     }
 
 cov_head_config = {
-    "layer_sizes":[50, 40, 2],
-    "activations": ["relu", "relu", "softplus"],
+    "layer_sizes":[2],
+    "activations": ["sigmoid"],
   
     }
 
@@ -521,18 +545,18 @@ hyperparameters = { "trunk_config": trunk_config,
                     "actor_mu_config": mu_head_config,
                     "actor_cov_config":cov_head_config, 
                     "critic_config": critic_net_config,
-                    "actor_optimizer": tf.keras.optimizers.SGD(learning_rate=0.001),
-                    "critic_optimizer": tf.keras.optimizers.SGD(learning_rate=0.01),
+                    "actor_optimizer": tf.keras.optimizers.RMSprop(learning_rate=0.0001),
+                    "critic_optimizer": tf.keras.optimizers.RMSprop(learning_rate=0.001),
                     "entropy":0.01,
-                    "gamma":0.99,
-                    "gradient_clipping": 0.5
+                    "gamma":0.999,
+                    "gradient_clipping": 0.8
                     }
 
 agent_configuration = {
 
     "action_space_bounds":[-1, 1],
     "action_space_size":2,
-    "number_iter":100,
+    "number_iter":10000,
     "max_steps":2000,
     "n_episodes_per_cycle":1,
     
@@ -547,7 +571,7 @@ if __name__ == '__main__':
     
     number_of_workers = 4
     params_queue = Manager().Queue(1)
-    gradient_queue = Manager().Queue()
+    gradient_queue = Manager().Queue(1)
     current_iter = Manager().Value("i", 0)
     average_reward_queue = Queue(1)
     
@@ -565,7 +589,8 @@ if __name__ == '__main__':
                             current_iter=current_iter,
                             name="Global Agent", 
                             record_statistics=False,
-                            average_reward_queue= average_reward_queue)
+                            average_reward_queue= average_reward_queue,
+                            save_checkpoints=False)
     
     # workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]
     workers = [WorkerAgent(**agent_configuration, **hyperparameters, gradient_queue=gradient_queue, parameters_queue = params_queue, current_iter=current_iter, name=f"Worker_{_}", record_statistics=False) for _ in range(number_of_workers)]

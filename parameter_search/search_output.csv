@@ -1,0 +1,827 @@
+Average_reward:-714.1194779177733
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EEF0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-312.9620092735079
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50ED68>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-244.34086770710178
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-796.7547759312235
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D50EE10>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-800.33153577773
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D524128>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-622.3708789945599
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D524160>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-1003.3920029623506
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5241D0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-576.7432943093984
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D524278>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-590.5112543385164
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5242B0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D5242E8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-195.05770754526534
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D524320>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-224.2452079376428
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D524358>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-246.46033422511175
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D524390>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-256.8286051277729
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D5243C8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-221.94405559335556
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.adam.Adam object at 0x000002A59D524400>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-279.08173511540906
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D524438>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.01>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-290.0528175809811
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D524470>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=0.001>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-163.97869307005178
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.005
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-222.218531478169
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.01
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-312.60558480899346
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.02
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-291.2071857028403
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.07
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-161.5956486016693
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-293.0272236760855
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.12
+
+gamma:0.99
+
+gradient_clipping:0.07
+
+Average_reward:-161.56144086809465
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.07
+
+Average_reward:-238.2495694412719
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.8
+
+gradient_clipping:0.07
+
+Average_reward:-283.5588915812432
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.75
+
+gradient_clipping:0.07
+
+Average_reward:-321.9104278569014
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.7
+
+gradient_clipping:0.07
+
+Average_reward:-268.58988957564554
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.65
+
+gradient_clipping:0.07 ->
+
+Average_reward:-245.65376441479845
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.6
+
+gradient_clipping:0.07
+
+Average_reward:-339.1941075561047
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.1
+
+Average_reward:-236.9799402468688
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.2
+
+Average_reward:-247.0497120029185
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.3
+
+Average_reward:-215.37897403459533
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.5
+
+Average_reward:-391.1751442015829
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.8
+
+Average_reward:-223.45867583320398
+
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+
+entropy:0.1
+
+gamma:0.9
+
+gradient_clipping:0.9
+Average_reward:-315.1775466672011
+trunk_config:"{'layer_sizes': [100, 100], 'activations': ['relu', 'relu']}"
+actor_mu_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'relu', 'tanh']}"
+actor_cov_config:"{'layer_sizes': [50, 40, 2], 'activations': ['relu', 'relu', 'softplus']}"
+critic_config:"{'layer_sizes': [100, 64, 1], 'activations': ['relu', 'relu', 'linear']}"
+actor_optimizer:<tensorflow.python.keras.optimizer_v2.gradient_descent.SGD object at 0x000002A59D50EDA0>
+actor_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+critic_optimizer:<tensorflow.python.keras.optimizer_v2.rmsprop.RMSprop object at 0x000002A59D5244A8>
+critic_learning_rate:"<tf.Variable 'learning_rate:0' shape=() dtype=float32, numpy=1e-04>"
+entropy:0.1
+gamma:0.9
+gradient_clipping:1.0
