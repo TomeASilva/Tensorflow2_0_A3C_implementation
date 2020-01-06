@@ -27,7 +27,11 @@ critic_net_config= {
 
 
 def refresh_search():
-    #refresh range
+    """Refreshes the grid search parameters i.e defines the grid for the parameters search, sets current hyperparameter to trunk_config,
+    and the current_hyperparameter_index to 0, each one of these variables is then dumped into a pickle file
+    This function should be used, when we want to reset a hyperparameter search, either because we finished the a grid search, or because we wante to change the grid
+    after running it for some time without the expected results"""
+    
     hyperparameter_list = ["trunk_config",
                     "actor_mu_config",
                     "actor_cov_config", 

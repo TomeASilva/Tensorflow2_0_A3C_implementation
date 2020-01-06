@@ -5,6 +5,7 @@ import tensorflow as tf
 import pickle
 import csv
 
+### this script performs grid search over the hyperparameters defined in hyperparameter_control.py
      
 
 trunk_config = {

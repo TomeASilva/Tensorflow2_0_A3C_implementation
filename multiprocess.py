@@ -2,6 +2,7 @@ import random
 import time
 from multiprocessing import Manager, Process
 
+#### This script contains examples on how to use the multiprocessing python module
 class Agent():
     def __init__(self, params_queue, gradient_queue, iter_number):
         self.params = {"mu": random.randint(1, 10),
